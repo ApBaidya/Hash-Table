@@ -1,0 +1,26 @@
+/*
+Aparajita Baidya
+1.28.2026
+
+To do:
+Add
+Print
+Delete
+Quit
+Store students in hash table:
+ use chaining
+ if more than 3 collisions occur when chaining, double array size and rehash
+Rand student generator:
+ make a file of first and last names
+ grab random first and last names from the file
+ add id number (increment it)
+ add rand GPA
+ Be able to specify # of students to generate and add
+*/
+#include <iostream>
+#include <cstring>
+#include <iomanip>
+#include "Node.h"
+#include "Student.h"
+//#include file of names
+

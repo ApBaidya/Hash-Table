@@ -1,0 +1,19 @@
+ //Aparajita Baidya 1.28.2026
+#ifndef NODE
+#define NODE
+
+#include "Student.h"
+
+class Node
+{
+ public:
+  Node(Student* s);//constructor
+  ~Node();//destructor
+  void setNext(Node* n);//for collisions
+  Node* getNext();//go through chains
+  Student* getStudent();//get student for print
+ private:
+  Node* next;
+  Student* student;
+}
+#endif //NODE

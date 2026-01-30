@@ -1,0 +1,47 @@
+//Aparajita Baidya 1.28.2026
+#include "Student.h"
+
+Student::Student()
+{
+  fname = new char[16];
+  lname = new char[16];
+}
+Student::~Student()
+{
+  delete[] fname;
+  delete[] lname; 
+}
+
+void Student::setF(char* f);
+{
+  strcpy(fname, f);
+}
+void Student::setL(char* l);
+{
+  strcpy(lname,l);
+}
+void Student::setI(int i);
+{
+  id = i;
+}
+void Student::setG(float g);
+{
+  gpa = g;
+}
+
+char* Student::getF()
+{
+  return fname;
+}
+char* Student::getL()
+{
+  return lname;
+}
+int Student::getI()
+{
+  return id;
+}
+float Student::getG()
+{
+  return gpa;
+}

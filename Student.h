@@ -1,0 +1,28 @@
+//Aparajita Baidya 1.28.2026
+#ifndef STUDENT
+#define STUDENT
+
+#include <cstring>
+
+class Student
+{
+ public:
+  Student();//constructor
+  ~Student();//destructor
+  //sets
+  void setF(char* f);//set first name (fname)
+  void setL(char* l);//set last name (lname)
+  void setI(int i);//set id
+  void setG(float g);//set gpa
+  //gets
+  char* getF();
+  char* getL();
+  int getI();
+  float getG();
+ private:
+  char* fname;//first name [16]
+  char* lname;//last name [16]
+  int id;
+  float gpa;
+};
+#endif //STUDENT
