@@ -1,6 +1,6 @@
 /*
 Aparajita Baidya
-1.30.2026
+2.5.2026
 
 To do:
 Add
@@ -19,17 +19,25 @@ Rand student generator:
 */
 #include <iostream>
 #include <cstring>
+//read files. ofstream creates and writes files.fstream does both
+#include <ifstream>
+//rounding
 #include <iomanip>
+//for rand numbers
+#include <ctime>
+#include <cstdlib>
+//h files
 #include "Node.h"
 #include "Student.h"
-//#include file of names
+
 
 using namespace std;
+
 
 //function definitions
 Student* randMkStud();//take names from file, randomly make students
 void randAdd();//ask for stud amounts --> do randMkStud that many times & add to table 
-void reHash();//remake hash Table --> make new table --> call hashFunc for all nodes --> set old func to new
+void reHash(Node**& htb);//remake hash Table --> make new table --> call hashFunc for all nodes --> set old func to new
 int hashFunc();//does the hash function stuff, returns index for node*
 Student* mkStud();//makes the student 
 void Add();//adds student to node*, adds student to hash table
@@ -39,6 +47,7 @@ void Print();//probably have to just look through array for what person wants
 void Delete();//delete specified value --> probably ask for details that can get hash functioned 
 void Quit();//have to delete each value in the table
 
+
 //main
 int main()
 {
@@ -46,8 +55,21 @@ int main()
   int tbLen = 101;//starting length 
   char input;
   int running = 1;
+  int randId = 0;//lets start the random IDs at 0
   //hash table  
   Node** hashtb = new Node*[tbLen];
+  
+  //set up name file stuff
+  ifstream firstNames("fName.txt");//read from fName when it comes to firstNames
+  ifstream lastNames("lName.txt");
+  //amount of names in the files
+  int fNum = 0;
+  int lNum = 0;
+  //count amount of words
+  while()
+  //set that random seeeeed
+  srand(time(NULL));
+  
   while(running == 1)
   {
     return 0;
@@ -77,12 +99,26 @@ int main()
 	Delete();
       }
   }
+  
   cout << "Farewell. Fare thee well."<<endl;
 }
 
+
 //hash related dudes
-void reHash(){}
-int hashFunc(){}
+void reHash(Node**& htb, int& tbSize)
+{
+  //make table twice the size
+  //rehash and stuff
+  //set it equal to original table
+  tbSize = 2 * tbSize;
+}
+int hashFunc()
+{
+  int index = 0; 
+  //maybe do some sort of % eq
+  return index;
+}
+
 
 //add normal
 Student* mkStud()
@@ -120,17 +156,48 @@ Student* mkStud()
   //return
   return s;
 }
-void Add(){}
+void Add(Node** htb){}
+
 
 //add random
-Student* randMkStud(){}
+Student* randMkStud(int& randID)
+{
+  Student* s = new Student;
+  //first name
+  char* fname = new char[16];
+  //last name
+  char* lname = new char[16];
+  //id
+  s->setI(randID);
+  //gpa
+  int gpa = rand() % 4 + 1; //set gpa to some nice random number
+  s->setG(gpa);
+  ++ randID;//incrimend after this student has been added 
+  return s;
+}
 void randAdd(){}
 
+
 //print
-void Print(){}
+void Print()
+{
+  //get index from hash function
+  //print if only node in chain
+  //check if student has name and id requested if in chain
+  //simply return if non existant 
+}
+
 
 //delete
-void Delete(){}
+void Delete()
+{
+  //get index from hash function
+  //delete if only node in chain
+  //check if student has name and id requested if in chain
+    //correct the chain & table
+  //simply return if non existant 
+}
+
 
 //quit
 void Quit(){}
