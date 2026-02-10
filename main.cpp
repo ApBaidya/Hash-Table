@@ -19,8 +19,10 @@ Rand student generator:
 */
 #include <iostream>
 #include <cstring>
+#include <string>
 //read files. ofstream creates and writes files.fstream does both
-#include <ifstream>
+#include <fstream>
+#include <vector>
 //rounding
 #include <iomanip>
 //for rand numbers
@@ -35,12 +37,12 @@ using namespace std;
 
 
 //function definitions
-Student* randMkStud();//take names from file, randomly make students
-void randAdd();//ask for stud amounts --> do randMkStud that many times & add to table 
-void reHash(Node**& htb);//remake hash Table --> make new table --> call hashFunc for all nodes --> set old func to new
-int hashFunc();//does the hash function stuff, returns index for node*
+Student* randMkStud(vector<string>* firstNs, vector<string>* lastNs, int& randID);//take names from file, randomly make students
+void randAdd(vector<string>* firstNs, vector<string>* lastNs, int& randID, int& tbLen);//ask for stud amounts --> do randMkStud that many times & add to table 
+void reHash(Node**& htb, int& tbLen);//remake hash Table --> make new table --> call hashFunc for all nodes --> set old func to new
+int hashFunc(int id, char* fname, int tbSize);//does the hash function stuff, returns index for node*
 Student* mkStud();//makes the student 
-void Add();//adds student to node*, adds student to hash table
+void Add(Node**& htb, int& tbLen);//adds student to node*, adds student to hash table
 //when adding, probably check if it has to go through a chain, and then count how many times it loops to get to end. if there are three nodes in the chain already, add new node to end, then call reHash()
 
 void Print();//probably have to just look through array for what person wants
@@ -51,59 +53,69 @@ void Quit();//have to delete each value in the table
 //main
 int main()
 {
-  //just some very boring normal variables
   int tbLen = 101;//starting length 
-  char input;
+  char input;//user input
   int running = 1;
-  int randId = 0;//lets start the random IDs at 0
-  //hash table  
-  Node** hashtb = new Node*[tbLen];
-  
+  int randID = 0;//lets start the random IDs at 0
+  Node** hashtb = new Node*[tbLen];//hash table
   //set up name file stuff
-  ifstream firstNames("fName.txt");//read from fName when it comes to firstNames
-  ifstream lastNames("lName.txt");
+  ifstream firstNames("C:/cygwin64/home/apara/projects/HashTable/fNames.txt");//read from fName when it comes to firstNames
+  ifstream lastNames("C:/cygwin64/home/apara/projects/HashTable/lNames.txt");
   //amount of names in the files
-  int fNum = 0;
-  int lNum = 0;
-  //count amount of words
-  while()
+  vector<string>* firstNs = new vector<string>();//make vector for firstnames
+  vector<string>*lastNs = new vector<string>();//last names
+  //make those vectors
+  string word; //first time using a string wwww
+  if(firstNames.is_open())
+  {
+    while(firstNames >> word)
+    {
+      cout << word<<endl;
+      firstNs->push_back(word);
+    }
+  }
+  if(lastNames.is_open())
+  {
+    while(lastNames >> word)
+    {
+      lastNs->push_back(word);
+    }//for future note, you can use .size to find the size of the vector i think.
+  }
   //set that random seeeeed
   srand(time(NULL));
-  
   while(running == 1)
   {
-    return 0;
     cout<<"what do you want to do? [a-add][r-rand add][p-print][d-delete][q-quit]:"<<endl;//ask what to do
     cin >> input;
     cin.ignore(10, '\n');
     cin.clear();
     if(input == 'q')
       {
-	Quit();
+	//Quit();
 	running = 0;//end the while
       }
     else if(input == 'a')
       {
-	Add();
+	Add(hashtb, tbLen);
       }
     else if(input == 'r')
       {
-	randAdd();
+	randAdd(firstNs, lastNs, randID, tbLen);
       }
     else if(input == 'p')
       {
-	Print();
+	//Print();
       }
     else if(input == 'd')
       {
-	Delete();
+	//Delete();
       }
   }
-  
   cout << "Farewell. Fare thee well."<<endl;
+  return 0;
 }
 
-
+/*
 //hash related dudes
 void reHash(Node**& htb, int& tbSize)
 {
@@ -112,10 +124,27 @@ void reHash(Node**& htb, int& tbSize)
   //set it equal to original table
   tbSize = 2 * tbSize;
 }
-int hashFunc()
+*/
+int hashFunc(int id, char* fname, int tbSize)
 {
-  int index = 0; 
+  int index = 0;
+  int nameVal = 0;
+  int loops = 1;
   //maybe do some sort of % eq
+  for(int i =0; i<sizeof(fname); ++i)
+  {
+    if(loops == 1)
+    {
+      nameVal = nameVal + fname[i];
+      loops = 0;
+    }
+    else
+    {
+      nameVal = nameVal * fname[i];
+      loops = 1;
+    }
+  }
+  index = ((id + fname[0]) * nameVal) % tbSize;
   return index;
 }
 
@@ -125,8 +154,8 @@ Student* mkStud()
 {
   Student* s = new Student;
   //vars
-  char* fname[16];
-  char* lname[16];
+  char* fname = new char[16];
+  char* lname = new char[16];
   int id;
   float gpa;
   //first name
@@ -156,28 +185,59 @@ Student* mkStud()
   //return
   return s;
 }
-void Add(Node** htb){}
-
+void Add(Node**& htb, int& tbLen)
+{
+  Student* s = new Student();
+  s = mkStud();
+  Node* node = new Node(s);
+  int index;
+  index = hashFunc(s->getI(), s->getF(), tbLen);
+}
 
 //add random
-Student* randMkStud(int& randID)
+Student* randMkStud(vector<string>* firstNs, vector<string>* lastNs, int& randID)
 {
   Student* s = new Student;
+  int random;
   //first name
   char* fname = new char[16];
+  int flen = firstNs->size();
+  random = rand() % flen;
+  strcpy(fname,(*(firstNs->begin()+random)).c_str());//https://stackoverflow.com/questions/21589353/error-cannot-convert-stdbasic-stringchar-to-const-char-for-argument-1#:~:text=Comments,do%20it%20without%20a%20temporary:
+  //note for future me, lets try not using cstring and string at the same time (just...pick one)
+  s->setF(fname);
   //last name
   char* lname = new char[16];
+  int llen = lastNs->size();
+  random = rand() % llen;
+  strcpy(lname, (*(lastNs->begin()+random)).c_str());//so, I essentially use an iterator to get the loc of the name, then dereference that fellow to get the actual value, but it appears you cant convert that to a const car* without c_str()
+  s->setL(lname);
   //id
   s->setI(randID);
   //gpa
   int gpa = rand() % 4 + 1; //set gpa to some nice random number
   s->setG(gpa);
-  ++ randID;//incrimend after this student has been added 
+  ++ randID;//incrimend after this student has been added
+  cout << s->getF()<<endl;
   return s;
 }
-void randAdd(){}
+void randAdd(vector<string>* firstNs, vector<string>* lastNs, int& randID, int& tbLen)
+{
+  Student* tempS = new Student();
+  int numStuds;
+  int index;
+  cout<<"How many students would you like to add?"<<endl;
+  cin>>numStuds;
+  cin.ignore(10, '\n');
+  cin.clear();
+  for(int i = 0; i < numStuds; ++i)
+  {
+    tempS = randMkStud(firstNs, lastNs, randID);
+    index = hashFunc(tempS->getI(), tempS->getF(),tbLen);
+  }
+}
 
-
+/*
 //print
 void Print()
 {
@@ -201,5 +261,5 @@ void Delete()
 
 //quit
 void Quit(){}
-
+*/
 
