@@ -1,6 +1,6 @@
 /*
 Aparajita Baidya
-2.5.2026
+2.9.2026
 
 To do:
 Add
@@ -40,7 +40,7 @@ using namespace std;
 Student* randMkStud(vector<string>* firstNs, vector<string>* lastNs, int& randID);//take names from file, randomly make students
 void randAdd(vector<string>* firstNs, vector<string>* lastNs, int& randID, int& tbLen);//ask for stud amounts --> do randMkStud that many times & add to table 
 void reHash(Node**& htb, int& tbLen);//remake hash Table --> make new table --> call hashFunc for all nodes --> set old func to new
-int hashFunc(int id, char* fname, int tbSize);//does the hash function stuff, returns index for node*
+int hashFunc(int id, char* fname, int tbLen);//does the hash function stuff, returns index for node*
 Student* mkStud();//makes the student 
 void Add(Node**& htb, int& tbLen);//adds student to node*, adds student to hash table
 //when adding, probably check if it has to go through a chain, and then count how many times it loops to get to end. if there are three nodes in the chain already, add new node to end, then call reHash()
@@ -58,6 +58,10 @@ int main()
   int running = 1;
   int randID = 0;//lets start the random IDs at 0
   Node** hashtb = new Node*[tbLen];//hash table
+  for(int i = 0; i<tbLen; ++i)//there has to be a better way...right?
+  {
+    hashtb[i] = nullptr;
+  }
   //set up name file stuff
   ifstream firstNames("C:/cygwin64/home/apara/projects/HashTable/fNames.txt");//read from fName when it comes to firstNames
   ifstream lastNames("C:/cygwin64/home/apara/projects/HashTable/lNames.txt");
@@ -115,23 +119,74 @@ int main()
   return 0;
 }
 
-/*
+
 //hash related dudes
-void reHash(Node**& htb, int& tbSize)
+void reHash(Node**& htb, int& tbLen) 
 {
+  cout<<"Time to redo that table"<<endl;
+  Student* tempStud = new Student();
+  Node* tempNode = new Node(tempStud);//store node that needs to get re hashed
+  Student* tS2 = new Student();
+  Node* tN2 = new Node(tS2);//for doing collision things with
+  int tempIndex = 0;
+  tbLen = tbLen+tbLen;//get len of new table
+  Node** newTb = new Node*[tbLen];//the new table, twice the size of the old
+  int chained = 0;//do I...need to rehash again?
   //make table twice the size
-  //rehash and stuff
+  for(int i = 0; 1<tbLen; ++i)//rehash everything in table
+  {
+    if(htb[i] != nullptr)//if node 
+    {
+      cout<<"found one"<<endl;
+      tempNode = htb[i];//set it to the current
+      tempIndex = hashFunc(tempNode->getStudent()->getI(), tempNode->getStudent()->getF(), tbLen);
+      if(newTb[tempIndex]!=nullptr)//collision
+      {
+	if(newTb[tempIndex]->getNext() == nullptr)//first collision
+	{
+	  newTb[tempIndex]->setNext(tempNode);
+	}
+	else//2nd collision...or more
+	{
+	  cout<<"Oh geez, guess we gotta do this again"<<endl;
+	  tN2 = newTb[tempIndex];
+	  while(tN2 -> getNext() != nullptr)
+	  {
+	    tN2 = tN2->getNext();
+	  }
+	  tN2->setNext(tempNode);//add it to end of chain
+	  chained = 1;
+	}
+      }
+      else
+      {
+	newTb[tempIndex] = tempNode;//just add it to new index
+      }
+    }
+  }
   //set it equal to original table
-  tbSize = 2 * tbSize;
+  for(int i = 0; i<tbLen-((1/2)*tbLen); ++i)
+  {
+    htb[i] = nullptr;
+  }
+  htb = newTb;//set it equal to new table
+  //rehash again?
+  if(chained == 1)
+  {
+    reHash(htb, tbLen);
+  }
+  cout<<"done"<<endl;
+  return;
 }
-*/
-int hashFunc(int id, char* fname, int tbSize)
+
+int hashFunc(int id, char* fname, int tbLen)//we should, uh, make this better
 {
   int index = 0;
   int nameVal = 0;
   int loops = 1;
+  /*
   //maybe do some sort of % eq
-  for(int i =0; i<sizeof(fname); ++i)
+  for(int i =0; i<strlen(fname); ++i)
   {
     if(loops == 1)
     {
@@ -144,7 +199,9 @@ int hashFunc(int id, char* fname, int tbSize)
       loops = 1;
     }
   }
-  index = ((id + fname[0]) * nameVal) % tbSize;
+  index = ((id + fname[0]) * nameVal) % tbLen;*/
+  index = id % tbLen;
+  cout<<"I probably shouldn't cout this but the index is "<<index;
   return index;
 }
 
@@ -187,11 +244,33 @@ Student* mkStud()
 }
 void Add(Node**& htb, int& tbLen)
 {
+  int chain = 0; //check if chaining is true. 
   Student* s = new Student();
   s = mkStud();
   Node* node = new Node(s);
   int index;
   index = hashFunc(s->getI(), s->getF(), tbLen);
+  if(htb[index]==nullptr)//no collision
+  {
+    htb[index] = node;
+  }
+  else//collision
+  {
+    if(htb[index]->getNext() == nullptr)
+    {
+      htb[index]->setNext(node);
+    }
+    else
+    {
+      htb[index]->getNext()->setNext(node);
+      //set it as 3rd in chain, set chain to 1 to rehash
+      chain = 1;
+    }
+  }
+  if(chain == 1)
+  {
+    reHash(htb, tbLen);
+  }
 }
 
 //add random
