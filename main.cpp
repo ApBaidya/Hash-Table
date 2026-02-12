@@ -1,21 +1,12 @@
 /*
 Aparajita Baidya
-2.11.2026
+2.12.2026
 
 To do:
-Add
-Print
-Delete
 Quit
 Store students in hash table:
  use chaining
  if more than 3 collisions occur when chaining, double array size and rehash
-Rand student generator:
- make a file of first and last names
- grab random first and last names from the file
- add id number (increment it)
- add rand GPA
- Be able to specify # of students to generate and add
 */
 #include <iostream>
 #include <cstring>
@@ -53,7 +44,7 @@ void Quit();//have to delete each value in the table
 //main
 int main()
 {
-  int tbLen = 102;//starting length 
+  int tbLen = 101;//starting length 
   char input;//user input
   int running = 1;
   int randID = 0;//lets start the random IDs at 0
@@ -139,7 +130,41 @@ int main()
 
 //hash related dudes
 void reHash(Node**& htb, int& tbLen) 
-{	      
+{
+  int index;//re hashed index
+  int oldTbLen = tbLen;//keep old tbLen
+  tbLen = 2*tbLen;//double it
+  Node** newHtb = new Node*[tbLen];//make new htb
+  for(int i = 0; i<tbLen; i++)//set up newHtb
+  {
+    newHtb[i]=nullptr;
+  }//end newHtb setup
+  for(int i = 0; i<oldTbLen; i++)//enter main loop: go through old htb
+  {
+    if(htb[i]!=nullptr)//check if Node* at htb[i]
+    {
+      if(htb[i]->getNext()!=nullptr)//check if part of chain
+      {
+
+      }//end rehash of chain
+      else//if not in chain
+      {
+	if(newHtb[index]!=nullptr)//check if collision
+	{
+
+	}//end of collision check
+	else
+	{
+	  newHtb[index] = htb[i];
+	}//exit normal add
+      }//exit rehash of not chain
+    }//exit rehash for htb[i]
+  }//exit main loop
+  for(int i=0; i<oldTbLen;i++)//clean out old htb
+  {
+    htb[i] = nullptr;
+  }//end of resetting old htb
+  htb = newHtb;//finally, change old htb
   return;
 }
 
@@ -164,7 +189,7 @@ int hashFunc(int id, char* fname, int tbLen)//we should, uh, make this better
     }
   }
   index = ((id + fname[0]) * nameVal) % tbLen;*/
-  index = id % (tbLen-1);
+  index = id % (tbLen);
   cout<<"I probably shouldn't cout this but the index is "<<index<<endl;;
   return index;
 }
