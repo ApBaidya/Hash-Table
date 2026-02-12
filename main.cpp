@@ -46,7 +46,7 @@ void Add(Node**& htb, int& tbLen);//adds student to node*, adds student to hash 
 //when adding, probably check if it has to go through a chain, and then count how many times it loops to get to end. if there are three nodes in the chain already, add new node to end, then call reHash()
 
 void Print(Node** htb, int& tbLen);//probably have to just look through array for what person wants
-void Delete();//delete specified value --> probably ask for details that can get hash functioned 
+void Delete(int tI, float tG, char* tF, char*tL, Node**& htb, int tbLen);//delete specified value --> probably ask for details that can get hash functioned 
 void Quit();//have to delete each value in the table
 
 
@@ -57,6 +57,11 @@ int main()
   char input;//user input
   int running = 1;
   int randID = 0;//lets start the random IDs at 0
+  //for delete
+  int tI;
+  float tG;
+  char* tF = new char[16];
+  char* tL = new char[16];
   Node** hashtb = new Node*[tbLen];//hash table
   for(int i = 0; i<tbLen+1; i++)//there has to be a better way...right?
   {
@@ -112,7 +117,19 @@ int main()
       }
     else if(input == 'd')
       {
-	//Delete();
+	cout<<"first name:"<<endl;
+        cin>>tF;
+        cin.ignore(10, '\n');
+        cin.clear();
+        cout<<"last name:"<<endl;
+        cin>>tL;
+        cin.ignore(10, '\n');
+        cin.clear();
+	cout<<"id:"<<endl;
+	cin>>tI;
+	cout<<"gpa;"<<endl;
+	cin>>tG;
+	Delete(tI, tG, tF, tL, hashtb, tbLen);
       }
   }
   cout << "Farewell. Fare thee well."<<endl;
@@ -122,121 +139,7 @@ int main()
 
 //hash related dudes
 void reHash(Node**& htb, int& tbLen) 
-{
-  int oldTbLen;
-  oldTbLen = tbLen;
-  cout<<"Time to redo that table"<<endl;
-  Student* tempStud = new Student();
-  Node* tempNode = new Node(tempStud);//store node that needs to get re hashed
-  Student* tS2 = new Student();
-  Node* tN2 = new Node(tS2);//for doing collision things with
-  int tempIndex = 0;//hash func index
-  cout<<"update table length"<<endl;
-  tbLen = tbLen+tbLen;//get len of new table
-  Node** newTb = new Node*[tbLen];//the new table, twice the size of the old
-  for(int i = 0; i<tbLen; i++)
-  {
-    newTb[i] = nullptr;
-  }
-  int chained = 0;//do I...need to rehash again?
-  cout<<"starting"<<endl;
-  for(int i = 0; i<oldTbLen; i++)//rehash everything in htb
-  {
-    cout<<"looking"<<endl;
-    cout<<"current index:"<<i<<":"<<htb[i]<<endl;
-    if(htb[i] != nullptr)//if node 
-    {
-      cout<<"found one"<<endl;
-      tempNode = htb[i];//set it to the current
-      cout<<"a"<<tempNode->getStudent()->getF()<<endl;//print this student's name
-      tempIndex = hashFunc(tempNode->getStudent()->getI(), tempNode->getStudent()->getF(), tbLen);
-      cout<<"b"<<endl;
-      if(newTb[tempIndex]!=nullptr)//collision
-      {
-	cout<<"c"<<endl;
-	if(newTb[tempIndex]->getNext() == nullptr)//first collision
-	{
-	  newTb[tempIndex]->setNext(tempNode);//add it to end
-	  cout<<"d"<<endl;
-	}
-	else//2nd collision...or more...seperate to make chained = 1
-	{
-	  cout<<"Oh geez, guess we gotta do this again"<<endl;
-	  tN2 = newTb[tempIndex];
-	  while(tN2 -> getNext() != nullptr)
-	  {
-	    cout<<"wait"<<endl;
-	    tN2 = tN2->getNext();//while going through the list, lets set tN2 to the next pointer
-	  }
-	  cout<<"inserted"<<endl;
-	  tN2->setNext(tempNode);//add it to end of chain
-	  chained = 1;
-	}//end collision checks      
-      }
-      else//if no chain
-      {
-	cout<<"nice"<<endl;
-	newTb[tempIndex] = tempNode;
-      }
-      cout<<"is there a chain here?"<<endl;
-      //check if chain is there at the htb position, lets use tN2
-      if(htb[i]->getNext()!=nullptr)//if chain
-      {
-	tN2 = htb[i];//head
-	cout<<"lets handle that chain"<<endl;
-	Student* tS3 = new Student();
-	Node* tN3 = new Node(tS3);//for some looping
-	tN3 = htb[i];//head again
-	while(tN2!=nullptr)//look through chain 
-	{
-	  tN2 = tN3;//reset tN2 to prev
-	  cout<<"found one2"<<endl;
-	  tN3 = tN2->getNext();//move up to look at next Node*
-	  cout<<"got next"<<endl;
-	  tN2->setNext(nullptr);//detach it from chain as already been sorted
-	  cout<<tN3->getStudent();//SEG FAULT WHYYYYY
-	  cout<<"detach old"<<endl;
-	  tempIndex = hashFunc(tN3->getStudent()->getI(),tN3->getStudent()->getF(), tbLen);
-	  cout<<"got new index"<<endl;
-	  if(newTb[tempIndex]!=nullptr)//collision
-	  {
-	    cout<<"collision"<<endl;
-	    if(newTb[tempIndex]->getNext()!=nullptr)//3rd in chain
-	    {
-	      cout<<"agaaaaain?!!!"<<endl;
-	      tN2 = newTb[tempIndex];//head of the new table's chain 
-	      while(tN2 -> getNext() != nullptr)//go through chain to get to end
-	      {
-		cout<<"wait"<<endl;
-		tN2 = tN2->getNext();
-	      }
-	      cout<<"inserted"<<endl;
-	      tN2->setNext(tempNode);
-	      chained = 1;
-	    }
-	    else//only 2nd collision
-	    {
-	      cout<<"added"<<endl;
-	      newTb[tempIndex]->setNext(tempNode);
-	    }
-	  }//end of collision check
-	  tN2 = tN3->getNext();//progress
-	}
-      }//end of chain check, continue looping
-    }//end rehash for htb[i]
-  }
-  //set it equal to original table
-  for(int i = 0; i<oldTbLen; ++i)
-  {
-    htb[i] = nullptr;
-  }
-  htb = newTb;//set it equal to new table
-  //rehash again?
-  if(chained == 1)
-  {
-    reHash(htb, tbLen);
-  }
-  cout<<"done"<<endl;
+{	      
   return;
 }
 
@@ -261,7 +164,7 @@ int hashFunc(int id, char* fname, int tbLen)//we should, uh, make this better
     }
   }
   index = ((id + fname[0]) * nameVal) % tbLen;*/
-  index = id % tbLen;
+  index = id % (tbLen-1);
   cout<<"I probably shouldn't cout this but the index is "<<index<<endl;;
   return index;
 }
@@ -428,18 +331,72 @@ void Print(Node** htb, int& tbLen)
   }
 }
 
-/*
 //delete
-void Delete()
+void Delete(int tI, float tG, char* tF, char*tL, Node**& htb, int tbLen)
 {
-  //get index from hash function
+  int index;
+  cout<<tI<<tG<<tF<<tL<<endl;
+  if(htb[3] != nullptr){
+    cout<<"debug: "<<htb[3]<<endl;
+  }
+  Student* tempS = new Student();
+  Node* tempN = nullptr;
+  index=hashFunc(tI, tF, tbLen);//get index from hash function
   //delete if only node in chain
-  //check if student has name and id requested if in chain
-    //correct the chain & table
-  //simply return if non existant 
+  cout<<"index is : "<<index<<endl;
+  cout<<htb[index]<<endl;
+  if(htb[index]!=nullptr)//node there?
+  {
+    cout<<"a"<<endl;
+    tempS = htb[index]->getStudent();
+    //first node
+    if(tempS->getI()==tI && tempS->getG()==tG && strcmp(tF, tempS->getF())==0 && strcmp(tL, tempS->getL())==0)
+    {
+      cout<<"b"<<endl;
+      //does that node have a chain?
+      if(htb[index]->getNext()!=nullptr)
+      {
+	tempN = htb[index]->getNext();
+	htb[index]->setNext(nullptr);
+	delete htb[index];
+	htb[index]=tempN;//set head of chain to what the next val in the chain was
+	return;
+      }
+      else//only other thing is not in chain so...
+      {
+	cout<<"c"<<endl;
+	delete htb[index];
+	htb[index] = nullptr;//reset that fellow
+	return;
+      }
+    }
+    else//check if there is a chain: check chain
+    {
+      cout<<"d"<<endl;
+      //Student* tS2 = new Student();
+      //Node* prev = new Node(tS2);
+      Node* prev = htb[index];
+      tempN = htb[index];
+      while(tempN!=nullptr)//not at end of chain
+      {
+	tempS = tempN->getStudent();
+	if(tempS->getI()==tI && tempS->getG()==tG && strcmp(tF, tempS->getF())==0 && strcmp(tL, tempS->getL())==0)
+	{
+	  cout<<"e"<<endl;
+	  prev->setNext(tempN->getNext());
+	  tempN->setNext(nullptr);
+	  delete tempN;
+	  return;
+	}
+	prev = tempN;
+	tempN = tempN -> getNext();
+      }
+    }
+  }
+  return;
 }
 
-
+/*
 //quit
 void Quit(){}
 */
