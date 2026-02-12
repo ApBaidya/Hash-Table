@@ -45,7 +45,7 @@ Student* mkStud();//makes the student
 void Add(Node**& htb, int& tbLen);//adds student to node*, adds student to hash table
 //when adding, probably check if it has to go through a chain, and then count how many times it loops to get to end. if there are three nodes in the chain already, add new node to end, then call reHash()
 
-void Print();//probably have to just look through array for what person wants
+void Print(Node** htb, int& tbLen);//probably have to just look through array for what person wants
 void Delete();//delete specified value --> probably ask for details that can get hash functioned 
 void Quit();//have to delete each value in the table
 
@@ -108,7 +108,7 @@ int main()
       }
     else if(input == 'p')
       {
-	//Print();
+	Print(hashtb, tbLen);
       }
     else if(input == 'd')
       {
@@ -305,7 +305,7 @@ Student* mkStud()
 }
 void Add(Node**& htb, int& tbLen)
 {
-  int chain = 0; //check if chaining is true. 
+  int chained = 0; //check if chaining is true. 
   Student* s = new Student();
   s = mkStud();
   Node* node = new Node(s);
@@ -325,11 +325,11 @@ void Add(Node**& htb, int& tbLen)
     {
       htb[index]->getNext()->setNext(node);
       //set it as 3rd in chain, set chain to 1 to rehash
-      chain = 1;
+      chained = 1;
     }
   }
   cout<<index<<htb[index]->getStudent()->getF();
-  if(chain == 1)
+  if(chained == 1)
   {
     reHash(htb, tbLen);
   }
@@ -381,20 +381,54 @@ void randAdd(Node**& htb, vector<string>* firstNs, vector<string>* lastNs, int& 
     {
       htb[index]=tempNode;
     }
+    else//collision
+    {
+      if(htb[index]->getNext() == nullptr)
+      {
+	htb[index] -> setNext(tempNode);
+      }
+      else
+      {
+	htb[index]->getNext()->setNext(tempNode);
+	chained = 1;
+      }
+    }
+  }
+  if(chained == 1)
+  {
+    reHash(htb, tbLen);
+  }
+}
+
+//print
+void Print(Node** htb, int& tbLen)
+{
+  Student* tempS = new Student();
+  Node* tempN = new Node(tempS);
+  for(int i = 0; i<tbLen; i++)//look through everything, print anything you can seeeeee
+  {
+    if(htb[i]!=nullptr)
+    {      
+      if(htb[i]->getNext()!=nullptr)//chain!!!!
+      {
+	tempN = htb[i];
+	while(tempN!=nullptr)
+	{
+	  tempS = tempN->getStudent();//lets set the student
+	  cout<<"Name:"<<tempS->getF()<<" "<<tempS->getL()<<" ID:"<<tempS->getI()<<" GPA:"<<setprecision(3)<<tempS->getG()<<endl;
+	  tempN = tempN->getNext();//progress through the while
+	}
+      }
+      else//no chain
+      {
+	tempS = htb[i]->getStudent();
+	cout<<"Name:"<<tempS->getF()<<" "<<tempS->getL()<<" ID:"<<tempS->getI()<<" GPA:"<<setprecision(3)<<tempS->getG()<<endl;
+      }
+    }
   }
 }
 
 /*
-//print
-void Print()
-{
-  //get index from hash function
-  //print if only node in chain
-  //check if student has name and id requested if in chain
-  //simply return if non existant 
-}
-
-
 //delete
 void Delete()
 {
