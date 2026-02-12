@@ -1,6 +1,6 @@
 /*
 Aparajita Baidya
-2.9.2026
+2.11.2026
 
 To do:
 Add
@@ -38,7 +38,7 @@ using namespace std;
 
 //function definitions
 Student* randMkStud(vector<string>* firstNs, vector<string>* lastNs, int& randID);//take names from file, randomly make students
-void randAdd(vector<string>* firstNs, vector<string>* lastNs, int& randID, int& tbLen);//ask for stud amounts --> do randMkStud that many times & add to table 
+void randAdd(Node**& htb, vector<string>* firstNs, vector<string>* lastNs, int& randID, int& tbLen);//ask for stud amounts --> do randMkStud that many times & add to table 
 void reHash(Node**& htb, int& tbLen);//remake hash Table --> make new table --> call hashFunc for all nodes --> set old func to new
 int hashFunc(int id, char* fname, int tbLen);//does the hash function stuff, returns index for node*
 Student* mkStud();//makes the student 
@@ -53,12 +53,12 @@ void Quit();//have to delete each value in the table
 //main
 int main()
 {
-  int tbLen = 101;//starting length 
+  int tbLen = 102;//starting length 
   char input;//user input
   int running = 1;
   int randID = 0;//lets start the random IDs at 0
   Node** hashtb = new Node*[tbLen];//hash table
-  for(int i = 0; i<tbLen; ++i)//there has to be a better way...right?
+  for(int i = 0; i<tbLen+1; i++)//there has to be a better way...right?
   {
     hashtb[i] = nullptr;
   }
@@ -74,7 +74,7 @@ int main()
   {
     while(firstNames >> word)
     {
-      cout << word<<endl;
+      //cout << word<<endl;
       firstNs->push_back(word);
     }
   }
@@ -104,7 +104,7 @@ int main()
       }
     else if(input == 'r')
       {
-	randAdd(firstNs, lastNs, randID, tbLen);
+	randAdd(hashtb, firstNs, lastNs, randID, tbLen);
       }
     else if(input == 'p')
       {
@@ -123,49 +123,110 @@ int main()
 //hash related dudes
 void reHash(Node**& htb, int& tbLen) 
 {
+  int oldTbLen;
+  oldTbLen = tbLen;
   cout<<"Time to redo that table"<<endl;
   Student* tempStud = new Student();
   Node* tempNode = new Node(tempStud);//store node that needs to get re hashed
   Student* tS2 = new Student();
   Node* tN2 = new Node(tS2);//for doing collision things with
-  int tempIndex = 0;
+  int tempIndex = 0;//hash func index
+  cout<<"update table length"<<endl;
   tbLen = tbLen+tbLen;//get len of new table
   Node** newTb = new Node*[tbLen];//the new table, twice the size of the old
-  int chained = 0;//do I...need to rehash again?
-  //make table twice the size
-  for(int i = 0; 1<tbLen; ++i)//rehash everything in table
+  for(int i = 0; i<tbLen; i++)
   {
+    newTb[i] = nullptr;
+  }
+  int chained = 0;//do I...need to rehash again?
+  cout<<"starting"<<endl;
+  for(int i = 0; i<oldTbLen; i++)//rehash everything in htb
+  {
+    cout<<"looking"<<endl;
+    cout<<"current index:"<<i<<":"<<htb[i]<<endl;
     if(htb[i] != nullptr)//if node 
     {
       cout<<"found one"<<endl;
       tempNode = htb[i];//set it to the current
+      cout<<"a"<<tempNode->getStudent()->getF()<<endl;//print this student's name
       tempIndex = hashFunc(tempNode->getStudent()->getI(), tempNode->getStudent()->getF(), tbLen);
+      cout<<"b"<<endl;
       if(newTb[tempIndex]!=nullptr)//collision
       {
+	cout<<"c"<<endl;
 	if(newTb[tempIndex]->getNext() == nullptr)//first collision
 	{
-	  newTb[tempIndex]->setNext(tempNode);
+	  newTb[tempIndex]->setNext(tempNode);//add it to end
+	  cout<<"d"<<endl;
 	}
-	else//2nd collision...or more
+	else//2nd collision...or more...seperate to make chained = 1
 	{
 	  cout<<"Oh geez, guess we gotta do this again"<<endl;
 	  tN2 = newTb[tempIndex];
 	  while(tN2 -> getNext() != nullptr)
 	  {
-	    tN2 = tN2->getNext();
+	    cout<<"wait"<<endl;
+	    tN2 = tN2->getNext();//while going through the list, lets set tN2 to the next pointer
 	  }
+	  cout<<"inserted"<<endl;
 	  tN2->setNext(tempNode);//add it to end of chain
 	  chained = 1;
-	}
+	}//end collision checks      
       }
-      else
+      else//if no chain
       {
-	newTb[tempIndex] = tempNode;//just add it to new index
+	cout<<"nice"<<endl;
+	newTb[tempIndex] = tempNode;
       }
-    }
+      cout<<"is there a chain here?"<<endl;
+      //check if chain is there at the htb position, lets use tN2
+      if(htb[i]->getNext()!=nullptr)//if chain
+      {
+	tN2 = htb[i];//head
+	cout<<"lets handle that chain"<<endl;
+	Student* tS3 = new Student();
+	Node* tN3 = new Node(tS3);//for some looping
+	tN3 = htb[i];//head again
+	while(tN2!=nullptr)//look through chain 
+	{
+	  tN2 = tN3;//reset tN2 to prev
+	  cout<<"found one2"<<endl;
+	  tN3 = tN2->getNext();//move up to look at next Node*
+	  cout<<"got next"<<endl;
+	  tN2->setNext(nullptr);//detach it from chain as already been sorted
+	  cout<<tN3->getStudent();//SEG FAULT WHYYYYY
+	  cout<<"detach old"<<endl;
+	  tempIndex = hashFunc(tN3->getStudent()->getI(),tN3->getStudent()->getF(), tbLen);
+	  cout<<"got new index"<<endl;
+	  if(newTb[tempIndex]!=nullptr)//collision
+	  {
+	    cout<<"collision"<<endl;
+	    if(newTb[tempIndex]->getNext()!=nullptr)//3rd in chain
+	    {
+	      cout<<"agaaaaain?!!!"<<endl;
+	      tN2 = newTb[tempIndex];//head of the new table's chain 
+	      while(tN2 -> getNext() != nullptr)//go through chain to get to end
+	      {
+		cout<<"wait"<<endl;
+		tN2 = tN2->getNext();
+	      }
+	      cout<<"inserted"<<endl;
+	      tN2->setNext(tempNode);
+	      chained = 1;
+	    }
+	    else//only 2nd collision
+	    {
+	      cout<<"added"<<endl;
+	      newTb[tempIndex]->setNext(tempNode);
+	    }
+	  }//end of collision check
+	  tN2 = tN3->getNext();//progress
+	}
+      }//end of chain check, continue looping
+    }//end rehash for htb[i]
   }
   //set it equal to original table
-  for(int i = 0; i<tbLen-((1/2)*tbLen); ++i)
+  for(int i = 0; i<oldTbLen; ++i)
   {
     htb[i] = nullptr;
   }
@@ -201,7 +262,7 @@ int hashFunc(int id, char* fname, int tbLen)//we should, uh, make this better
   }
   index = ((id + fname[0]) * nameVal) % tbLen;*/
   index = id % tbLen;
-  cout<<"I probably shouldn't cout this but the index is "<<index;
+  cout<<"I probably shouldn't cout this but the index is "<<index<<endl;;
   return index;
 }
 
@@ -267,6 +328,7 @@ void Add(Node**& htb, int& tbLen)
       chain = 1;
     }
   }
+  cout<<index<<htb[index]->getStudent()->getF();
   if(chain == 1)
   {
     reHash(htb, tbLen);
@@ -300,11 +362,12 @@ Student* randMkStud(vector<string>* firstNs, vector<string>* lastNs, int& randID
   cout << s->getF()<<endl;
   return s;
 }
-void randAdd(vector<string>* firstNs, vector<string>* lastNs, int& randID, int& tbLen)
+void randAdd(Node**& htb, vector<string>* firstNs, vector<string>* lastNs, int& randID, int& tbLen)
 {
   Student* tempS = new Student();
   int numStuds;
   int index;
+  int chained = 0;
   cout<<"How many students would you like to add?"<<endl;
   cin>>numStuds;
   cin.ignore(10, '\n');
@@ -313,6 +376,11 @@ void randAdd(vector<string>* firstNs, vector<string>* lastNs, int& randID, int& 
   {
     tempS = randMkStud(firstNs, lastNs, randID);
     index = hashFunc(tempS->getI(), tempS->getF(),tbLen);
+    Node* tempNode = new Node(tempS);
+    if(htb[index]==nullptr)
+    {
+      htb[index]=tempNode;
+    }
   }
 }
 
