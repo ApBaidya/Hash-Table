@@ -222,7 +222,6 @@ int hashFunc(int id, char* fname, int tbLen)//we should, uh, make this better
   int index = 0;
   int nameVal = 0;
   int loops = 1;
-  /*
   //maybe do some sort of % eq
   for(int i =0; i<strlen(fname); ++i)
   {
@@ -237,8 +236,11 @@ int hashFunc(int id, char* fname, int tbLen)//we should, uh, make this better
       loops = 1;
     }
   }
-  index = ((id + fname[0]) * nameVal) % tbLen;*/
-  index = id % (tbLen);
+  index = ((id + fname[0]) * nameVal); 
+  if(index < 0){
+    index = index * -1;
+  }
+  index = index % tbLen;
   cout<<"I probably shouldn't cout this but the index is "<<index<<endl;;
   return index;
 }
