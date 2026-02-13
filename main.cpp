@@ -38,7 +38,7 @@ void Add(Node**& htb, int& tbLen);//adds student to node*, adds student to hash 
 
 void Print(Node** htb, int& tbLen);//probably have to just look through array for what person wants
 void Delete(int tI, float tG, char* tF, char*tL, Node**& htb, int tbLen);//delete specified value --> probably ask for details that can get hash functioned 
-void Quit();//have to delete each value in the table
+void Quit(int tbLen, Node**& htb);//have to delete each value in the table
 
 
 //main
@@ -91,7 +91,7 @@ int main()
     cin.clear();
     if(input == 'q')
       {
-	//Quit();
+	Quit(tbLen, hashtb);
 	running = 0;//end the while
       }
     else if(input == 'a')
@@ -131,32 +131,77 @@ int main()
 //hash related dudes
 void reHash(Node**& htb, int& tbLen) 
 {
+  int chained = 0;//has a chain occured in the rehashing 
+  int countChain = 0;//yet again for chaining
   int index;//re hashed index
   int oldTbLen = tbLen;//keep old tbLen
   tbLen = 2*tbLen;//double it
   Node** newHtb = new Node*[tbLen];//make new htb
+  Node* tempN = nullptr;//for chaining --> will act as current
+  Node* tempN2 = nullptr;//will act as next
+  Node* tempN3 = nullptr;//yet another Node* --> for going through newHtb when hashing chains
   for(int i = 0; i<tbLen; i++)//set up newHtb
   {
     newHtb[i]=nullptr;
   }//end newHtb setup
   for(int i = 0; i<oldTbLen; i++)//enter main loop: go through old htb
   {
+    countChain = 0;//reset the count each time
     if(htb[i]!=nullptr)//check if Node* at htb[i]
     {
+      index = hashFunc(htb[i]->getStudent()->getI(), htb[i]->getStudent()->getF(), tbLen);
       if(htb[i]->getNext()!=nullptr)//check if part of chain
       {
-
+	//cout<<"gonna deal with a chain"<<endl;
+	tempN = htb[i];
+	while(tempN!=nullptr)//loop through the chain
+	{
+	  //cout<<"found one"<<endl;
+	  tempN2 = tempN->getNext();//store next pointer
+	  tempN->setNext(nullptr);//get it out of the chain
+	  index = hashFunc(tempN->getStudent()->getI(), tempN->getStudent()->getF(), tbLen);//get new index
+	  //add it to newHtb --> check for collisions
+	  if(newHtb[index]!=nullptr)//if collision
+	  {
+	    tempN3 = newHtb[index];
+	    while(tempN3->getNext()!=nullptr)
+	    {
+	      tempN3=tempN3->getNext();//move through chain
+	      ++countChain;
+	    }
+	    tempN3->setNext(tempN);
+	    if(countChain >= 2)
+	    {
+	      chained = 1;
+	    }
+	  }//end collision check
+	  else
+	  {
+	    newHtb[index]=tempN;
+	  }
+	  tempN=tempN2;//move up chain
+	}
       }//end rehash of chain
-      else//if not in chain
-      {
+      else//if not part of a chain
+	{
 	if(newHtb[index]!=nullptr)//check if collision
 	{
-
+	  tempN = newHtb[index];
+	  while(tempN->getNext()!=nullptr)
+	  {
+	    tempN=tempN->getNext();
+	    ++countChain;
+	  }
+	  tempN->setNext(htb[i]);
+	  if(countChain>=2)//4th node added to linked list
+	  {
+	    chained = 1;//time to reHash again
+	  }
 	}//end of collision check
-	else
+	else//no need to check if collision
 	{
-	  newHtb[index] = htb[i];
-	}//exit normal add
+	  newHtb[index]=htb[i];
+	}
       }//exit rehash of not chain
     }//exit rehash for htb[i]
   }//exit main loop
@@ -165,6 +210,10 @@ void reHash(Node**& htb, int& tbLen)
     htb[i] = nullptr;
   }//end of resetting old htb
   htb = newHtb;//finally, change old htb
+  if(chained==1){
+    cout<<"AGAIN"<<endl;
+    reHash(htb, tbLen);
+  }
   return;
 }
 
@@ -238,6 +287,7 @@ void Add(Node**& htb, int& tbLen)
   s = mkStud();
   Node* node = new Node(s);
   int index;
+  Node* tempN = nullptr;//for chains
   index = hashFunc(s->getI(), s->getF(), tbLen);
   if(htb[index]==nullptr)//no collision
   {
@@ -251,14 +301,21 @@ void Add(Node**& htb, int& tbLen)
     }
     else
     {
-      htb[index]->getNext()->setNext(node);
-      //set it as 3rd in chain, set chain to 1 to rehash
-      chained = 1;
+      cout<<"okay"<<endl;
+      tempN = htb[index];
+      while(tempN->getNext()!=nullptr)
+      {
+	cout<<"passing"<<endl;
+	tempN = tempN->getNext();
+	++chained;
+      }
+      tempN->setNext(node);
     }
   }
   cout<<index<<htb[index]->getStudent()->getF();
-  if(chained == 1)
+  if(chained >= 2)
   {
+    cout<<"rehash time"<<endl;
     reHash(htb, tbLen);
   }
 }
@@ -296,6 +353,7 @@ void randAdd(Node**& htb, vector<string>* firstNs, vector<string>* lastNs, int& 
   int numStuds;
   int index;
   int chained = 0;
+  Node* tN = nullptr;//for chaining
   cout<<"How many students would you like to add?"<<endl;
   cin>>numStuds;
   cin.ignore(10, '\n');
@@ -317,12 +375,19 @@ void randAdd(Node**& htb, vector<string>* firstNs, vector<string>* lastNs, int& 
       }
       else
       {
-	htb[index]->getNext()->setNext(tempNode);
-	chained = 1;
+	cout<<"okay"<<endl;
+	tN=htb[index];
+	while(tN->getNext()!=nullptr)
+	{
+	  cout<<"passing"<<endl;
+	  tN = tN->getNext();
+	  ++chained;
+	}
+	tN->setNext(tempNode);
       }
     }
   }
-  if(chained == 1)
+  if(chained >= 2)
   {
     reHash(htb, tbLen);
   }
@@ -331,6 +396,7 @@ void randAdd(Node**& htb, vector<string>* firstNs, vector<string>* lastNs, int& 
 //print
 void Print(Node** htb, int& tbLen)
 {
+  int len = 0;
   Student* tempS = new Student();
   Node* tempN = new Node(tempS);
   for(int i = 0; i<tbLen; i++)//look through everything, print anything you can seeeeee
@@ -342,6 +408,7 @@ void Print(Node** htb, int& tbLen)
 	tempN = htb[i];
 	while(tempN!=nullptr)
 	{
+	  ++len;
 	  tempS = tempN->getStudent();//lets set the student
 	  cout<<"Name:"<<tempS->getF()<<" "<<tempS->getL()<<" ID:"<<tempS->getI()<<" GPA:"<<setprecision(3)<<tempS->getG()<<endl;
 	  tempN = tempN->getNext();//progress through the while
@@ -349,11 +416,14 @@ void Print(Node** htb, int& tbLen)
       }
       else//no chain
       {
+	++len;
 	tempS = htb[i]->getStudent();
 	cout<<"Name:"<<tempS->getF()<<" "<<tempS->getL()<<" ID:"<<tempS->getI()<<" GPA:"<<setprecision(3)<<tempS->getG()<<endl;
       }
     }
   }
+  cout<<len<<endl;
+  return;
 }
 
 //delete
@@ -421,8 +491,45 @@ void Delete(int tI, float tG, char* tF, char*tL, Node**& htb, int tbLen)
   return;
 }
 
-/*
 //quit
-void Quit(){}
-*/
+void Quit(int tbLen, Node**& htb)
+{
+  Node* current = nullptr;//for chains
+  Node* next = nullptr;
+  for(int i = 0; i<tbLen; i++)
+  {
+    if(htb[i]!=nullptr)
+    {
+      //chain
+      if(htb[i]->getNext()!=nullptr)
+      {
+	current = htb[i];//head
+	next = htb[i];
+	while(next!=nullptr)
+	{
+	  cout<<"delete in chain"<<endl;
+	  next = current->getNext();
+	  current->setNext(nullptr);
+	  delete current;
+	  current = next;//set current to the next value
+	}
+      }
+      //not chain
+      else
+      {
+	cout<<"delete"<<endl;
+	delete htb[i];
+	htb[i] = nullptr;
+      }
+    }
+  }
+  for(int i = 0; i<tbLen; i++){
+    if(htb[i]!= nullptr)
+    {
+      cout<<htb[i]->getStudent()->getF()<<endl;
+      cout<<"oops"<<endl;
+    }
+  }
+  return;
+}
 
