@@ -172,6 +172,8 @@ void reHash(Node**& htb, int& tbLen)
 	    tempN3->setNext(tempN);
 	    if(countChain >= 2)
 	    {
+	      cout<<countChain<<endl;
+	      cout<<"again..."<<endl;
 	      chained = 1;
 	    }
 	  }//end collision check
@@ -195,6 +197,8 @@ void reHash(Node**& htb, int& tbLen)
 	  tempN->setNext(htb[i]);
 	  if(countChain>=2)//4th node added to linked list
 	  {
+	    cout<<countChain<<endl;
+	    cout<<"aggaaaainn"<<endl;
 	    chained = 1;//time to reHash again
 	  }
 	}//end of collision check
@@ -214,34 +218,30 @@ void reHash(Node**& htb, int& tbLen)
     cout<<"AGAIN"<<endl;
     reHash(htb, tbLen);
   }
+  cout<<"done"<<endl;
   return;
 }
 
 int hashFunc(int id, char* fname, int tbLen)//we should, uh, make this better
 {
+  int len = 0;
   int index = 0;
   int nameVal = 0;
-  int loops = 1;
+  
   //maybe do some sort of % eq
   for(int i =0; i<strlen(fname); ++i)
   {
-    if(loops == 1)
-    {
-      nameVal = nameVal + fname[i];
-      loops = 0;
-    }
-    else
-    {
-      nameVal = nameVal * fname[i];
-      loops = 1;
-    }
+    ++len;
+    nameVal = nameVal + fname[i] * id;
   }
   index = ((id + fname[0]) * nameVal); 
   if(index < 0){
     index = index * -1;
   }
+  index = index/len;
   index = index % tbLen;
-  cout<<"I probably shouldn't cout this but the index is "<<index<<endl;;
+  //index = id % tbLen;
+  //cout<<"I probably shouldn't cout this but the index is "<<index<<endl;;
   return index;
 }
 
@@ -346,7 +346,7 @@ Student* randMkStud(vector<string>* firstNs, vector<string>* lastNs, int& randID
   int gpa = rand() % 4 + 1; //set gpa to some nice random number
   s->setG(gpa);
   ++ randID;//incrimend after this student has been added
-  cout << s->getF()<<endl;
+  //cout << s->getF()<<endl;
   return s;
 }
 void randAdd(Node**& htb, vector<string>* firstNs, vector<string>* lastNs, int& randID, int& tbLen)
@@ -355,6 +355,7 @@ void randAdd(Node**& htb, vector<string>* firstNs, vector<string>* lastNs, int& 
   int numStuds;
   int index;
   int chained = 0;
+  int rehash = 0;
   Node* tN = nullptr;//for chaining
   cout<<"How many students would you like to add?"<<endl;
   cin>>numStuds;
@@ -385,12 +386,20 @@ void randAdd(Node**& htb, vector<string>* firstNs, vector<string>* lastNs, int& 
 	  tN = tN->getNext();
 	  ++chained;
 	}
+	cout<<chained;
 	tN->setNext(tempNode);
+	if(chained >= 2)
+	{
+	  cout<<"AAAAAAAAAAAAAA"<<endl;
+	  rehash = 1;
+	}
       }
     }
+    chained = 0;
   }
-  if(chained >= 2)
+  if(rehash == 1)
   {
+    cout<<"rehash time"<<endl;
     reHash(htb, tbLen);
   }
 }
@@ -496,6 +505,7 @@ void Delete(int tI, float tG, char* tF, char*tL, Node**& htb, int tbLen)
 //quit
 void Quit(int tbLen, Node**& htb)
 {
+  int len = 0;
   Node* current = nullptr;//for chains
   Node* next = nullptr;
   for(int i = 0; i<tbLen; i++)
@@ -507,31 +517,37 @@ void Quit(int tbLen, Node**& htb)
       {
 	current = htb[i];//head
 	next = htb[i];
+	len = 0;
 	while(next!=nullptr)
 	{
-	  cout<<"delete in chain"<<endl;
+	  ++len;
+	  //cout<<"delete in chain"<<endl;
 	  next = current->getNext();
 	  current->setNext(nullptr);
 	  delete current;
 	  current = next;//set current to the next value
 	}
+	cout<<len<<endl;
       }
       //not chain
       else
       {
-	cout<<"delete"<<endl;
+	//++len;
+	//cout<<"delete"<<endl;
 	delete htb[i];
 	htb[i] = nullptr;
       }
     }
   }
+  /*
   for(int i = 0; i<tbLen; i++){
     if(htb[i]!= nullptr)
     {
       cout<<htb[i]->getStudent()->getF()<<endl;
       cout<<"oops"<<endl;
     }
-  }
+    }*/
+  cout<<len<<endl;
   return;
 }
 
